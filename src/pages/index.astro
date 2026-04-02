@@ -8,6 +8,8 @@ type Tool = {
 	imageSrc?: string;
 	iconName?: string;
 	imageVariant?: string;
+	splitLeftHref?: string;
+	splitRightHref?: string;
 };
 
 function parseExtraLinks(raw: string | undefined): Tool[] {
@@ -49,11 +51,34 @@ function parseExtraLinks(raw: string | undefined): Tool[] {
 }
 
 const tools = parseExtraLinks(import.meta.env.PUBLIC_EXTRA_LINKS);
+
+const flexwayHref =
+	tools.find((t) => /frsiberiagroup\.flexways\.net/i.test(t.href))?.href ??
+	tools.find((t) => /^flexway$/i.test(t.title))?.href ??
+	'https://frsiberiagroup.flexways.net/web/booking/#/login';
+
+const rossboardHref =
+	tools.find((t) => /board\.devidev\.work/i.test(t.href))?.href ??
+	tools.find((t) => /^rossboard$/i.test(t.title))?.href ??
+	'https://board.devidev.work/';
+
+const toolsWithSplit: Tool[] = tools.map((t) => {
+	const isRossboard =
+		t.href === rossboardHref || /board\.devidev\.work/i.test(t.href) || /^rossboard$/i.test(t.title);
+
+	if (!isRossboard) return t;
+
+	return {
+		...t,
+		splitLeftHref: flexwayHref,
+		splitRightHref: rossboardHref,
+	};
+});
 ---
 
 <Layout title="Dashboard Tools">
 	<div class="dashboard-grid">
-		{tools.map((tool) => (
+		{toolsWithSplit.map((tool) => (
 			<Card {...tool} />
 		))}
 	</div>
