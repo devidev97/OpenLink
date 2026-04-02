@@ -1,46 +1,69 @@
-# Astro Starter Kit: Basics
+# OpenLink
+
+Página simple (Astro) para listar enlaces y mostrarlos en tarjetas. Los enlaces extra se configuran vía `.env` usando una variable pública.
+
+## Requisitos
+
+- Node.js + npm
+
+## Instalación y arranque
 
 ```sh
-npm create astro@latest -- --template basics
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Servidor local en `http://localhost:4321`.
 
-## 🚀 Project Structure
+## Configuración del `.env`
 
-Inside of your Astro project, you'll see the following folders and files:
+Este proyecto usa **una variable de entorno pública**:
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+- **`PUBLIC_EXTRA_LINKS`**: lista de enlaces extra en formato **JSON**, pero guardado como **string**.
+
+### Crear tu `.env`
+
+1. Copia el ejemplo:
+
+```sh
+cp .env.example .env
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+2. Edita `.env` y ajusta `PUBLIC_EXTRA_LINKS`.
 
-## 🧞 Commands
+### Formato esperado (`PUBLIC_EXTRA_LINKS`)
 
-All commands are run from the root of the project, from a terminal:
+- Debe ser un **array JSON**.
+- En `.env` debe ir como **string entre comillas**.
+- Puede ser **multilínea** siempre que esté entre comillas simples `'...'` o dobles `"..."`.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Ejemplo (multilínea, recomendado para mantenerlo legible):
 
-## 👀 Want to learn more?
+```env
+PUBLIC_EXTRA_LINKS='[
+  {
+    "title": "Mi enlace",
+    "href": "https://example.com",
+    "imageSrc": "/logo-link.svg",
+    "imageVariant": "large"
+  }
+]'
+```
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Campos por item:
+
+- **`title`** (string, requerido): texto a mostrar.
+- **`href`** (string, requerido): URL destino.
+- **`imageSrc`** (string, opcional): ruta a una imagen dentro de `public/` (por ejemplo `"/mi-logo.png"`). Si no se pone, se usa `"/logo-link.svg"`.
+- **`imageVariant`** (string, opcional): variante de render (por ejemplo `"large"`), si tu UI la soporta.
+
+## Build
+
+```sh
+npm run build
+npm run preview
+```
+
+## Notas
+
+- `.env` está **ignorado por git**; no se sube al repositorio. Usa `.env.example` para compartir la plantilla.

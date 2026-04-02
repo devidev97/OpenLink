@@ -10,13 +10,6 @@ type Tool = {
 	imageVariant?: string;
 };
 
-function envUrl(key: string): string | null {
-	const value = (import.meta.env as any)[key];
-	if (typeof value !== 'string') return null;
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : null;
-}
-
 function parseExtraLinks(raw: string | undefined): Tool[] {
 	if (!raw) return [];
 	try {
@@ -55,58 +48,7 @@ function parseExtraLinks(raw: string | undefined): Tool[] {
 	}
 }
 
-const extraTools = parseExtraLinks(import.meta.env.PUBLIC_EXTRA_LINKS);
-
-const tools: Tool[] = [];
-
-const flexwayUrl = envUrl('PUBLIC_FLEXWAY_URL');
-if (flexwayUrl) {
-	tools.push({
-		title: 'Flexway',
-		imageSrc: '/frs-logo-png_seeklogo-394281-removebg-preview.png',
-		href: flexwayUrl,
-	});
-}
-
-const rossboardUrl = envUrl('PUBLIC_ROSSBOARD_URL');
-if (rossboardUrl) {
-	tools.push({
-		title: 'Rossboard',
-		imageSrc: '/logo-RossBoard.png',
-		href: rossboardUrl,
-	});
-}
-
-const portoolsUrl = envUrl('PUBLIC_PORTOOLS_URL');
-if (portoolsUrl) {
-	tools.push({
-		title: 'Portools',
-		imageSrc: '/logo-Portools.png',
-		href: portoolsUrl,
-	});
-}
-
-const myShipTrackingUrl = envUrl('PUBLIC_MYSHIPTRACKING_URL');
-if (myShipTrackingUrl) {
-	tools.push({
-		title: 'My Ship Tracking',
-		imageSrc: '/logo-myshiptracking.png',
-		href: myShipTrackingUrl,
-		imageVariant: 'large',
-	});
-}
-
-const teleportUrl = envUrl('PUBLIC_TELEPORT_URL');
-if (teleportUrl) {
-	tools.push({
-		title: 'Teleport',
-		imageSrc: '/logo-teleport-intercambio.png',
-		href: teleportUrl,
-		imageVariant: 'large',
-	});
-}
-
-tools.push(...extraTools);
+const tools = parseExtraLinks(import.meta.env.PUBLIC_EXTRA_LINKS);
 ---
 
 <Layout title="Dashboard Tools">
