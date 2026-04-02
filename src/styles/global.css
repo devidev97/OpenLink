@@ -114,7 +114,8 @@ a {
 }
 
 /* Card Styles */
-.card {
+.card,
+button.card {
 	background-color: var(--card-bg);
 	border: 1px solid var(--card-border);
 	border-radius: 8px;
@@ -133,7 +134,14 @@ a {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.card:hover {
+button.card {
+	appearance: none;
+	font: inherit;
+	color: inherit;
+}
+
+.card:hover,
+button.card:hover {
 	transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 39, 68, 0.1);
 }

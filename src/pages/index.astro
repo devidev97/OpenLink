@@ -8,8 +8,12 @@ type Tool = {
 	imageSrc?: string;
 	iconName?: string;
 	imageVariant?: string;
+	/** Tarjeta extra: abrir Flexway + Rossboard en ventanas */
+	splitOnly?: boolean;
 	splitLeftHref?: string;
 	splitRightHref?: string;
+	splitLeftImageSrc?: string;
+	splitRightImageSrc?: string;
 };
 
 function parseExtraLinks(raw: string | undefined): Tool[] {
@@ -62,23 +66,44 @@ const rossboardHref =
 	tools.find((t) => /^rossboard$/i.test(t.title))?.href ??
 	'https://board.devidev.work/';
 
-const toolsWithSplit: Tool[] = tools.map((t) => {
-	const isRossboard =
-		t.href === rossboardHref || /board\.devidev\.work/i.test(t.href) || /^rossboard$/i.test(t.title);
+const flexwayImageSrc =
+	tools.find((t) => t.href === flexwayHref || /^flexway$/i.test(t.title))?.imageSrc ??
+	'/frs-logo-png_seeklogo-394281-removebg-preview.png';
 
-	if (!isRossboard) return t;
+const rossboardImageSrc =
+	tools.find((t) => t.href === rossboardHref || /^rossboard$/i.test(t.title))?.imageSrc ??
+	'/logo-RossBoard.png';
 
-	return {
-		...t,
-		splitLeftHref: flexwayHref,
-		splitRightHref: rossboardHref,
-	};
-});
+function isRossboardTool(t: Tool): boolean {
+	return (
+		t.href === rossboardHref ||
+		/board\.devidev\.work/i.test(t.href) ||
+		/^rossboard$/i.test(t.title)
+	);
+}
+
+const splitPairCard: Tool = {
+	title: 'Flexway + Rossboard',
+	href: '#',
+	splitOnly: true,
+	splitLeftHref: flexwayHref,
+	splitRightHref: rossboardHref,
+	splitLeftImageSrc: flexwayImageSrc,
+	splitRightImageSrc: rossboardImageSrc,
+};
+
+const toolsForGrid: Tool[] = [];
+for (const t of tools) {
+	toolsForGrid.push(t);
+	if (isRossboardTool(t)) {
+		toolsForGrid.push(splitPairCard);
+	}
+}
 ---
 
 <Layout title="Dashboard Tools">
 	<div class="dashboard-grid">
-		{toolsWithSplit.map((tool) => (
+		{toolsForGrid.map((tool) => (
 			<Card {...tool} />
 		))}
 	</div>

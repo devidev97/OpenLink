@@ -6,45 +6,78 @@ interface Props {
   iconName?: string;
   imageSrc?: string;
   href: string;
+  /** Tarjeta extra en la cuadrícula: solo abre Flexway + Rossboard en ventanas */
+  splitOnly?: boolean;
   splitLeftHref?: string;
   splitRightHref?: string;
+  splitLeftImageSrc?: string;
+  splitRightImageSrc?: string;
   imageVariant?: string;
 }
 
-const { title, iconName, imageSrc, href, splitLeftHref, splitRightHref, imageVariant } = Astro.props;
+const {
+  title,
+  iconName,
+  imageSrc,
+  href,
+  splitOnly = false,
+  splitLeftHref,
+  splitRightHref,
+  splitLeftImageSrc,
+  splitRightImageSrc,
+  imageVariant,
+} = Astro.props;
+
 const isExternal = /^https?:\/\//.test(href);
-const hasSplit = Boolean(splitLeftHref && splitRightHref);
+const isSplitTile =
+  splitOnly && Boolean(splitLeftHref && splitRightHref);
 const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
 ---
 
 <div class="card-wrap">
-  <a
-    href={href}
-    class="card"
-    {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-  >
-    {hasSplit ? (
-      <button
-        type="button"
-        class="split-corner-button"
-        aria-label={`Abrir Flexway y ${title} en dos ventanas (75/25)`}
-        data-split-left={splitLeftHref}
-        data-split-right={splitRightHref}
-      >
-        ⇄
-      </button>
-    ) : null}
-    <div class="card-icon">
-      {imageSrc ? (
-        <img src={imageSrc} alt={title} class={`card-image ${imageVariantClass}`} />
-      ) : iconName ? (
-        <Icon name={iconName} size={64} stroke-width={1.5} />
-      ) : null}
-    </div>
-    <p class="card-title">{title}</p>
-  </a>
+  {isSplitTile ? (
+    <button
+      type="button"
+      class="card split-tile-button"
+      aria-label={`Flexway + Rossboard: abrir en dos ventanas (75/25)`}
+      data-split-left={splitLeftHref}
+      data-split-right={splitRightHref}
+    >
+      <div class="card-icon card-icon--dual">
+        <span class="dual-logos" aria-hidden="true">
+          {splitLeftImageSrc ? (
+            <img class="dual-logo" src={splitLeftImageSrc} alt="" />
+          ) : (
+            <span class="dual-logo-fallback">F</span>
+          )}
+          <span class="dual-plus">+</span>
+          {splitRightImageSrc ? (
+            <img class="dual-logo" src={splitRightImageSrc} alt="" />
+          ) : (
+            <span class="dual-logo-fallback">R</span>
+          )}
+        </span>
+      </div>
+      <p class="card-title">{title}</p>
+    </button>
+  ) : (
+    <a
+      href={href}
+      class="card"
+      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    >
+      <div class="card-icon">
+        {imageSrc ? (
+          <img src={imageSrc} alt={title} class={`card-image ${imageVariantClass}`} />
+        ) : iconName ? (
+          <Icon name={iconName} size={64} stroke-width={1.5} />
+        ) : null}
+      </div>
+      <p class="card-title">{title}</p>
+    </a>
+  )}
 
-  {hasSplit ? (
+  {isSplitTile ? (
     <script is:inline>
       (() => {
         if (window.__openlinkSplitInit) return;
@@ -56,7 +89,7 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
 
         function openPopoutForWrap(wrap) {
           if (!wrap) return;
-          const openBtn = wrap.querySelector('.split-corner-button');
+          const openBtn = wrap.querySelector('.split-tile-button');
           if (!openBtn) return;
 
           const left = openBtn.getAttribute('data-split-left') || '';
@@ -67,21 +100,15 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
           const availH = window.screen?.availHeight ?? window.innerHeight;
           const h = Math.max(500, availH);
 
-          // Reparto de pantalla: Flexway (izq) 75%, Rossboard (der) 25%
-          // Importante: aseguramos que la suma sea EXACTAMENTE availW para que no se solapen.
           const flexwayRatio = 0.75;
           const minFlexwayW = 700;
           const minRossboardW = 420;
 
-          // Clamp de Flexway para dejar siempre espacio mínimo a Rossboard.
           const idealFlexwayW = Math.floor(availW * flexwayRatio);
           const maxFlexwayW = Math.max(minFlexwayW, availW - minRossboardW);
           const flexwayW = Math.min(maxFlexwayW, Math.max(minFlexwayW, idealFlexwayW));
           const rossboardW = Math.max(minRossboardW, availW - flexwayW);
 
-          // Nota: para poder posicionar y dimensionar, abrimos primero `about:blank`
-          // (ventana "real") y luego navegamos a la URL. Algunos navegadores ignoran
-          // move/resize cuando se abre directamente a un dominio externo.
           const baseLeft = Number.isFinite(window.screen?.availLeft) ? window.screen.availLeft : 0;
           const baseTop = Number.isFinite(window.screen?.availTop) ? window.screen.availTop : 0;
 
@@ -123,7 +150,6 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
             rightWin?.resizeTo(rossboardW, h);
           } catch {}
 
-          // Navegar después de abrir (para preservar tamaño/posición).
           try {
             leftWin.location.href = left;
           } catch {}
@@ -136,7 +162,7 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
           const target = ev.target;
           if (!target) return;
 
-          const openBtn = target.closest ? target.closest('.split-corner-button') : null;
+          const openBtn = target.closest ? target.closest('.split-tile-button') : null;
           if (openBtn) {
             ev.preventDefault();
             ev.stopPropagation();
@@ -146,11 +172,54 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
       })();
     </script>
   ) : null}
- </div>
+</div>
 
 <style>
   .card-wrap {
     position: relative;
+  }
+
+  .split-tile-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .card-icon--dual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dual-logos {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+  }
+
+  .dual-logo {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+
+  .dual-logo-fallback {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    font-size: 1rem;
+    font-weight: 800;
+    background: #fff;
+  }
+
+  .dual-plus {
+    font-weight: 900;
+    opacity: 0.65;
+    font-size: 1.1rem;
   }
 
   .card-icon {
@@ -176,28 +245,4 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
   .card:hover .card-icon {
     color: var(--header-accent);
   }
-
-  .split-corner-button {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 2;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    border: 1px solid var(--card-border);
-    background: rgba(255, 255, 255, 0.92);
-    color: var(--text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    transition: transform var(--transition-speed), background var(--transition-speed);
-  }
-  .split-corner-button:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 1);
-  }
-
 </style>
