@@ -27,7 +27,7 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
       <button
         type="button"
         class="split-corner-button"
-        aria-label={`Abrir split: Flexway a la izquierda y ${title} a la derecha`}
+        aria-label={`Abrir Flexway y ${title} en dos ventanas (75/25)`}
         data-split-left={splitLeftHref}
         data-split-right={splitRightHref}
       >
@@ -45,100 +45,103 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
   </a>
 
   {hasSplit ? (
-    <div class="split-overlay" role="dialog" aria-modal="true" aria-label="Split Flexway/Rossboard">
-      <div class="split-overlay-inner">
-        <div class="split-header">
-          <div class="split-header-title">
-            Split: Flexway | {title}
-          </div>
-          <div class="split-header-actions">
-            <button type="button" class="split-close-button" aria-label="Cerrar split">
-              Cerrar
-            </button>
-          </div>
-        </div>
-
-        <div class="split-grid">
-          <iframe
-            class="split-iframe"
-            data-side="left"
-            data-src={splitLeftHref}
-            title="Flexway"
-            src=""
-            loading="lazy"
-          />
-          <iframe
-            class="split-iframe"
-            data-side="right"
-            data-src={splitRightHref}
-            title={title}
-            src=""
-            loading="lazy"
-          />
-        </div>
-
-        <div class="split-fallback">
-          <span>
-            Si alguna web no permite incrustarse en `iframe`, usa estos enlaces:
-          </span>
-          <a class="split-fallback-link" target="_blank" rel="noreferrer" href={splitLeftHref}>
-            Abrir Flexway
-          </a>
-          <a class="split-fallback-link" target="_blank" rel="noreferrer" href={splitRightHref}>
-            Abrir {title}
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <script>
+    <script is:inline>
       (() => {
-        const cardWrap = document.currentScript?.closest('.card-wrap');
-        if (!cardWrap) return;
+        if (window.__openlinkSplitInit) return;
+        window.__openlinkSplitInit = true;
 
-        const overlayEl = cardWrap.querySelector('.split-overlay');
-        const splitButtonEl = cardWrap.querySelector('.split-corner-button');
-        const closeButtonEl = cardWrap.querySelector('.split-close-button');
-        const iframes = cardWrap.querySelectorAll('.split-iframe');
-
-        if (!overlayEl || !splitButtonEl || !closeButtonEl || iframes.length !== 2) return;
-
-        const overlayElNN = overlayEl as HTMLDivElement;
-        const splitButtonElNN = splitButtonEl as HTMLButtonElement;
-        const closeButtonElNN = closeButtonEl as HTMLButtonElement;
-
-        const iframeLeft = iframes[0] as HTMLIFrameElement;
-        const iframeRight = iframes[1] as HTMLIFrameElement;
-
-        function openSplit() {
-          const left = iframeLeft.getAttribute('data-src') || '';
-          const right = iframeRight.getAttribute('data-src') || '';
-          iframeLeft.src = left;
-          iframeRight.src = right;
-          overlayElNN.classList.add('is-open');
+        function qsWrap(el) {
+          return el && el.closest ? el.closest('.card-wrap') : null;
         }
 
-        function closeSplit() {
-          overlayElNN.classList.remove('is-open');
-          iframeLeft.src = '';
-          iframeRight.src = '';
+        function openPopoutForWrap(wrap) {
+          if (!wrap) return;
+          const openBtn = wrap.querySelector('.split-corner-button');
+          if (!openBtn) return;
+
+          const left = openBtn.getAttribute('data-split-left') || '';
+          const right = openBtn.getAttribute('data-split-right') || '';
+          if (!left || !right) return;
+
+          const availW = window.screen?.availWidth ?? window.innerWidth;
+          const availH = window.screen?.availHeight ?? window.innerHeight;
+          const h = Math.max(500, availH);
+
+          // Reparto de pantalla: Flexway (izq) 75%, Rossboard (der) 25%
+          // Importante: aseguramos que la suma sea EXACTAMENTE availW para que no se solapen.
+          const flexwayRatio = 0.75;
+          const minFlexwayW = 700;
+          const minRossboardW = 420;
+
+          // Clamp de Flexway para dejar siempre espacio mínimo a Rossboard.
+          const idealFlexwayW = Math.floor(availW * flexwayRatio);
+          const maxFlexwayW = Math.max(minFlexwayW, availW - minRossboardW);
+          const flexwayW = Math.min(maxFlexwayW, Math.max(minFlexwayW, idealFlexwayW));
+          const rossboardW = Math.max(minRossboardW, availW - flexwayW);
+
+          // Nota: para poder posicionar y dimensionar, abrimos primero `about:blank`
+          // (ventana "real") y luego navegamos a la URL. Algunos navegadores ignoran
+          // move/resize cuando se abre directamente a un dominio externo.
+          const baseLeft = Number.isFinite(window.screen?.availLeft) ? window.screen.availLeft : 0;
+          const baseTop = Number.isFinite(window.screen?.availTop) ? window.screen.availTop : 0;
+
+          const commonFeatures = [
+            'popup=yes',
+            'resizable=yes',
+            'scrollbars=yes',
+            'toolbar=no',
+            'menubar=no',
+            'status=no',
+          ].join(',');
+
+          const leftWin = window.open(
+            'about:blank',
+            'split_left',
+            `${commonFeatures},width=${flexwayW},height=${h},left=${baseLeft},top=${baseTop}`,
+          );
+          const rightWin = window.open(
+            'about:blank',
+            'split_right',
+            `${commonFeatures},width=${rossboardW},height=${h},left=${baseLeft + flexwayW},top=${baseTop}`,
+          );
+
+          if (!leftWin || !rightWin) {
+            alert(
+              'El navegador ha bloqueado las ventanas emergentes.\n\n' +
+                'Permite popups para este sitio y vuelve a pulsar el botón.\n' +
+                'En Chrome/Edge suele aparecer un icono en la barra de direcciones.',
+            );
+            return;
+          }
+
+          try {
+            leftWin?.moveTo(baseLeft, baseTop);
+            leftWin?.resizeTo(flexwayW, h);
+          } catch {}
+          try {
+            rightWin?.moveTo(baseLeft + flexwayW, baseTop);
+            rightWin?.resizeTo(rossboardW, h);
+          } catch {}
+
+          // Navegar después de abrir (para preservar tamaño/posición).
+          try {
+            leftWin.location.href = left;
+          } catch {}
+          try {
+            rightWin.location.href = right;
+          } catch {}
         }
 
-        splitButtonElNN.addEventListener('click', (ev) => {
-          ev.preventDefault(); // evita navegar al href normal del card
-          ev.stopPropagation();
-          openSplit();
-        });
+        document.addEventListener('click', (ev) => {
+          const target = ev.target;
+          if (!target) return;
 
-        closeButtonElNN.addEventListener('click', () => closeSplit());
-
-        overlayElNN.addEventListener('click', (ev) => {
-          // si el usuario hace click en el fondo (no en el panel), cerramos
-          if (ev.target === overlayElNN) closeSplit();
-        });
-
-        window.addEventListener('keydown', (ev) => {
-          if (ev.key === 'Escape') closeSplit();
+          const openBtn = target.closest ? target.closest('.split-corner-button') : null;
+          if (openBtn) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            openPopoutForWrap(qsWrap(openBtn));
+          }
         });
       })();
     </script>
@@ -197,93 +200,4 @@ const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
     background: rgba(255, 255, 255, 1);
   }
 
-  .split-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: 9999;
-    display: none;
-    padding: 1rem;
-  }
-  .split-overlay.is-open {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .split-overlay-inner {
-    width: min(1200px, 100%);
-    height: min(800px, 100%);
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
-  }
-
-  .split-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background: var(--header-bg);
-    color: #fff;
-  }
-  .split-header-title {
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-  .split-close-button {
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
-    padding: 0.45rem 0.7rem;
-    border-radius: 10px;
-  }
-
-  .split-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    flex: 1;
-    background: #f4f7f9;
-  }
-  .split-iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    background: #fff;
-  }
-
-  .split-fallback {
-    padding: 0.75rem 1rem;
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    border-top: 1px solid var(--card-border);
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-  }
-  .split-fallback-link {
-    padding: 0.35rem 0.6rem;
-    border-radius: 10px;
-    border: 1px solid var(--card-border);
-    color: var(--text-primary);
-    background: #fff;
-    transition: transform var(--transition-speed);
-  }
-  .split-fallback-link:hover {
-    transform: translateY(-1px);
-  }
-
-  @media (max-width: 900px) {
-    .split-grid {
-      grid-template-columns: 1fr;
-      grid-template-rows: 1fr 1fr;
-    }
-  }
 </style>
