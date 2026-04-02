@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Card from '../components/Card.astro';
+
+type Tool = {
+	title: string;
+	href: string;
+	imageSrc?: string;
+	iconName?: string;
+	imageVariant?: string;
+};
+
+function envUrl(key: string): string | null {
+	const value = (import.meta.env as any)[key];
+	if (typeof value !== 'string') return null;
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : null;
+}
+
+function parseExtraLinks(raw: string | undefined): Tool[] {
+	if (!raw) return [];
+	try {
+		const trimmed = raw.trim();
+		const unquoted =
+			(trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+			(trimmed.startsWith("'") && trimmed.endsWith("'"))
+				? trimmed.slice(1, -1)
+				: trimmed;
+		const parsed = JSON.parse(unquoted);
+		if (!Array.isArray(parsed)) return [];
+		return parsed
+			.map((item) => {
+				if (!item || typeof item !== 'object') return null;
+				const title = (item as any).title;
+				const href = (item as any).href;
+				const imageSrcRaw = (item as any).imageSrc;
+				const imageVariant = (item as any).imageVariant;
+				if (typeof title !== 'string' || typeof href !== 'string') return null;
+
+				const imageSrc =
+					typeof imageSrcRaw === 'string' && imageSrcRaw.trim().length > 0
+						? imageSrcRaw
+						: '/logo-link.svg';
+
+				return {
+					title,
+					href,
+					imageSrc,
+					...(typeof imageVariant === 'string' ? { imageVariant } : {}),
+				} satisfies Tool;
+			})
+			.filter(Boolean) as Tool[];
+	} catch {
+		return [];
+	}
+}
+
+const extraTools = parseExtraLinks(import.meta.env.PUBLIC_EXTRA_LINKS);
+
+const tools: Tool[] = [];
+
+const flexwayUrl = envUrl('PUBLIC_FLEXWAY_URL');
+if (flexwayUrl) {
+	tools.push({
+		title: 'Flexway',
+		imageSrc: '/frs-logo-png_seeklogo-394281-removebg-preview.png',
+		href: flexwayUrl,
+	});
+}
+
+const rossboardUrl = envUrl('PUBLIC_ROSSBOARD_URL');
+if (rossboardUrl) {
+	tools.push({
+		title: 'Rossboard',
+		imageSrc: '/logo-RossBoard.png',
+		href: rossboardUrl,
+	});
+}
+
+const portoolsUrl = envUrl('PUBLIC_PORTOOLS_URL');
+if (portoolsUrl) {
+	tools.push({
+		title: 'Portools',
+		imageSrc: '/logo-Portools.png',
+		href: portoolsUrl,
+	});
+}
+
+const myShipTrackingUrl = envUrl('PUBLIC_MYSHIPTRACKING_URL');
+if (myShipTrackingUrl) {
+	tools.push({
+		title: 'My Ship Tracking',
+		imageSrc: '/logo-myshiptracking.png',
+		href: myShipTrackingUrl,
+		imageVariant: 'large',
+	});
+}
+
+const teleportUrl = envUrl('PUBLIC_TELEPORT_URL');
+if (teleportUrl) {
+	tools.push({
+		title: 'Teleport',
+		imageSrc: '/logo-teleport-intercambio.png',
+		href: teleportUrl,
+		imageVariant: 'large',
+	});
+}
+
+tools.push(...extraTools);
+---
+
+<Layout title="Dashboard Tools">
+	<div class="dashboard-grid">
+		{tools.map((tool) => (
+			<Card {...tool} />
+		))}
+	</div>
+</Layout>
+
+<style>
+	/* Any page-specific styles */
+</style>

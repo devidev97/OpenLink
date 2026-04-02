@@ -1,0 +1,153 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+
+:root {
+	--bg-color: #f4f7f9;
+	--header-bg: #002744;
+	--header-accent: #004b7b;
+	--card-bg: #ffffff;
+	--card-border: #e0e6ed;
+	--text-primary: #002744;
+	--text-secondary: #5a6b7d;
+	--transition-speed: 0.2s;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: 'Inter', system-ui, sans-serif;
+	background-color: var(--bg-color);
+	color: var(--text-primary);
+	line-height: 1.5;
+	min-height: 100vh;
+}
+
+a {
+	text-decoration: none;
+	color: inherit;
+}
+
+/* Header Styles */
+.header {
+	width: 100%;
+}
+
+.header-top {
+	background-color: var(--header-bg);
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 2rem;
+	color: white;
+}
+
+.header-nav {
+	display: flex;
+	gap: 1.5rem;
+	align-items: center;
+}
+
+.nav-item {
+	font-weight: 500;
+	font-size: 0.95rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+    opacity: 0.9;
+    transition: opacity var(--transition-speed);
+}
+
+.nav-item:hover {
+    opacity: 1;
+}
+
+.header-bottom {
+	background-color: var(--bg-color);
+	height: 1px;
+	width: 100%;
+}
+
+.header-logo {
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+/* Grid Layout */
+.dashboard-grid {
+	display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Card Styles */
+.card {
+	background-color: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 8px;
+	padding: 1rem;
+	display: flex;
+	aspect-ratio: 1 / 1;
+	width: 100%;
+    max-width: 200px; /* Prevent huge cards */
+    margin: 0 auto;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+	cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+	transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 39, 68, 0.1);
+}
+
+.card-icon {
+	color: var(--text-primary);
+	margin-bottom: 1.25rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.card-title {
+	font-weight: 600;
+	font-size: 1.1rem;
+	color: var(--text-primary);
+}

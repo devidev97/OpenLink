@@ -1,0 +1,289 @@
+---
+import { Icon } from '@lucide/astro';
+
+interface Props {
+  title: string;
+  iconName?: string;
+  imageSrc?: string;
+  href: string;
+  splitLeftHref?: string;
+  splitRightHref?: string;
+  imageVariant?: string;
+}
+
+const { title, iconName, imageSrc, href, splitLeftHref, splitRightHref, imageVariant } = Astro.props;
+const isExternal = /^https?:\/\//.test(href);
+const hasSplit = Boolean(splitLeftHref && splitRightHref);
+const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
+---
+
+<div class="card-wrap">
+  <a
+    href={href}
+    class="card"
+    {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+  >
+    {hasSplit ? (
+      <button
+        type="button"
+        class="split-corner-button"
+        aria-label={`Abrir split: Flexway a la izquierda y ${title} a la derecha`}
+        data-split-left={splitLeftHref}
+        data-split-right={splitRightHref}
+      >
+        ⇄
+      </button>
+    ) : null}
+    <div class="card-icon">
+      {imageSrc ? (
+        <img src={imageSrc} alt={title} class={`card-image ${imageVariantClass}`} />
+      ) : iconName ? (
+        <Icon name={iconName} size={64} stroke-width={1.5} />
+      ) : null}
+    </div>
+    <p class="card-title">{title}</p>
+  </a>
+
+  {hasSplit ? (
+    <div class="split-overlay" role="dialog" aria-modal="true" aria-label="Split Flexway/Rossboard">
+      <div class="split-overlay-inner">
+        <div class="split-header">
+          <div class="split-header-title">
+            Split: Flexway | {title}
+          </div>
+          <div class="split-header-actions">
+            <button type="button" class="split-close-button" aria-label="Cerrar split">
+              Cerrar
+            </button>
+          </div>
+        </div>
+
+        <div class="split-grid">
+          <iframe
+            class="split-iframe"
+            data-side="left"
+            data-src={splitLeftHref}
+            title="Flexway"
+            src=""
+            loading="lazy"
+          />
+          <iframe
+            class="split-iframe"
+            data-side="right"
+            data-src={splitRightHref}
+            title={title}
+            src=""
+            loading="lazy"
+          />
+        </div>
+
+        <div class="split-fallback">
+          <span>
+            Si alguna web no permite incrustarse en `iframe`, usa estos enlaces:
+          </span>
+          <a class="split-fallback-link" target="_blank" rel="noreferrer" href={splitLeftHref}>
+            Abrir Flexway
+          </a>
+          <a class="split-fallback-link" target="_blank" rel="noreferrer" href={splitRightHref}>
+            Abrir {title}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const cardWrap = document.currentScript?.closest('.card-wrap');
+        if (!cardWrap) return;
+
+        const overlayEl = cardWrap.querySelector('.split-overlay');
+        const splitButtonEl = cardWrap.querySelector('.split-corner-button');
+        const closeButtonEl = cardWrap.querySelector('.split-close-button');
+        const iframes = cardWrap.querySelectorAll('.split-iframe');
+
+        if (!overlayEl || !splitButtonEl || !closeButtonEl || iframes.length !== 2) return;
+
+        const overlayElNN = overlayEl as HTMLDivElement;
+        const splitButtonElNN = splitButtonEl as HTMLButtonElement;
+        const closeButtonElNN = closeButtonEl as HTMLButtonElement;
+
+        const iframeLeft = iframes[0] as HTMLIFrameElement;
+        const iframeRight = iframes[1] as HTMLIFrameElement;
+
+        function openSplit() {
+          const left = iframeLeft.getAttribute('data-src') || '';
+          const right = iframeRight.getAttribute('data-src') || '';
+          iframeLeft.src = left;
+          iframeRight.src = right;
+          overlayElNN.classList.add('is-open');
+        }
+
+        function closeSplit() {
+          overlayElNN.classList.remove('is-open');
+          iframeLeft.src = '';
+          iframeRight.src = '';
+        }
+
+        splitButtonElNN.addEventListener('click', (ev) => {
+          ev.preventDefault(); // evita navegar al href normal del card
+          ev.stopPropagation();
+          openSplit();
+        });
+
+        closeButtonElNN.addEventListener('click', () => closeSplit());
+
+        overlayElNN.addEventListener('click', (ev) => {
+          // si el usuario hace click en el fondo (no en el panel), cerramos
+          if (ev.target === overlayElNN) closeSplit();
+        });
+
+        window.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Escape') closeSplit();
+        });
+      })();
+    </script>
+  ) : null}
+ </div>
+
+<style>
+  .card-wrap {
+    position: relative;
+  }
+
+  .card-icon {
+    height: 90px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.8rem;
+  }
+  .card-image {
+    max-width: 120px;
+    max-height: 90px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .card-image--large {
+    max-width: 170px;
+    max-height: 130px;
+  }
+  .card:hover .card-icon {
+    color: var(--header-accent);
+  }
+
+  .split-corner-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    transition: transform var(--transition-speed), background var(--transition-speed);
+  }
+  .split-corner-button:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .split-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+    display: none;
+    padding: 1rem;
+  }
+  .split-overlay.is-open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .split-overlay-inner {
+    width: min(1200px, 100%);
+    height: min(800px, 100%);
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+  }
+
+  .split-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--header-bg);
+    color: #fff;
+  }
+  .split-header-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .split-close-button {
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    padding: 0.45rem 0.7rem;
+    border-radius: 10px;
+  }
+
+  .split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    flex: 1;
+    background: #f4f7f9;
+  }
+  .split-iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+  }
+
+  .split-fallback {
+    padding: 0.75rem 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  .split-fallback-link {
+    padding: 0.35rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    background: #fff;
+    transition: transform var(--transition-speed);
+  }
+  .split-fallback-link:hover {
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 900px) {
+    .split-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+    }
+  }
+</style>
