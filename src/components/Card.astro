@@ -6,220 +6,34 @@ interface Props {
   iconName?: string;
   imageSrc?: string;
   href: string;
-  /** Tarjeta extra en la cuadrícula: solo abre Flexway + Rossboard en ventanas */
-  splitOnly?: boolean;
-  splitLeftHref?: string;
-  splitRightHref?: string;
-  splitLeftImageSrc?: string;
-  splitRightImageSrc?: string;
   imageVariant?: string;
 }
 
-const {
-  title,
-  iconName,
-  imageSrc,
-  href,
-  splitOnly = false,
-  splitLeftHref,
-  splitRightHref,
-  splitLeftImageSrc,
-  splitRightImageSrc,
-  imageVariant,
-} = Astro.props;
-
+const { title, iconName, imageSrc, href, imageVariant } = Astro.props;
 const isExternal = /^https?:\/\//.test(href);
-const isSplitTile =
-  splitOnly && Boolean(splitLeftHref && splitRightHref);
 const imageVariantClass = imageVariant === 'large' ? 'card-image--large' : '';
 ---
 
 <div class="card-wrap">
-  {isSplitTile ? (
-    <button
-      type="button"
-      class="card split-tile-button"
-      aria-label={`Flexway + Rossboard: abrir en dos ventanas (75/25)`}
-      data-split-left={splitLeftHref}
-      data-split-right={splitRightHref}
-    >
-      <div class="card-icon card-icon--dual">
-        <span class="dual-logos" aria-hidden="true">
-          {splitLeftImageSrc ? (
-            <img class="dual-logo" src={splitLeftImageSrc} alt="" />
-          ) : (
-            <span class="dual-logo-fallback">F</span>
-          )}
-          <span class="dual-plus">+</span>
-          {splitRightImageSrc ? (
-            <img class="dual-logo" src={splitRightImageSrc} alt="" />
-          ) : (
-            <span class="dual-logo-fallback">R</span>
-          )}
-        </span>
-      </div>
-      <p class="card-title">{title}</p>
-    </button>
-  ) : (
-    <a
-      href={href}
-      class="card"
-      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-    >
-      <div class="card-icon">
-        {imageSrc ? (
-          <img src={imageSrc} alt={title} class={`card-image ${imageVariantClass}`} />
-        ) : iconName ? (
-          <Icon name={iconName} size={64} stroke-width={1.5} />
-        ) : null}
-      </div>
-      <p class="card-title">{title}</p>
-    </a>
-  )}
-
-  {isSplitTile ? (
-    <script is:inline>
-      (() => {
-        if (window.__openlinkSplitInit) return;
-        window.__openlinkSplitInit = true;
-
-        function qsWrap(el) {
-          return el && el.closest ? el.closest('.card-wrap') : null;
-        }
-
-        function openPopoutForWrap(wrap) {
-          if (!wrap) return;
-          const openBtn = wrap.querySelector('.split-tile-button');
-          if (!openBtn) return;
-
-          const left = openBtn.getAttribute('data-split-left') || '';
-          const right = openBtn.getAttribute('data-split-right') || '';
-          if (!left || !right) return;
-
-          const availW = window.screen?.availWidth ?? window.innerWidth;
-          const availH = window.screen?.availHeight ?? window.innerHeight;
-          const h = Math.max(500, availH);
-
-          const flexwayRatio = 0.75;
-          const minFlexwayW = 700;
-          const minRossboardW = 420;
-
-          const idealFlexwayW = Math.floor(availW * flexwayRatio);
-          const maxFlexwayW = Math.max(minFlexwayW, availW - minRossboardW);
-          const flexwayW = Math.min(maxFlexwayW, Math.max(minFlexwayW, idealFlexwayW));
-          const rossboardW = Math.max(minRossboardW, availW - flexwayW);
-
-          const baseLeft = Number.isFinite(window.screen?.availLeft) ? window.screen.availLeft : 0;
-          const baseTop = Number.isFinite(window.screen?.availTop) ? window.screen.availTop : 0;
-
-          const commonFeatures = [
-            'popup=yes',
-            'resizable=yes',
-            'scrollbars=yes',
-            'toolbar=no',
-            'menubar=no',
-            'status=no',
-          ].join(',');
-
-          const leftWin = window.open(
-            'about:blank',
-            'split_left',
-            `${commonFeatures},width=${flexwayW},height=${h},left=${baseLeft},top=${baseTop}`,
-          );
-          const rightWin = window.open(
-            'about:blank',
-            'split_right',
-            `${commonFeatures},width=${rossboardW},height=${h},left=${baseLeft + flexwayW},top=${baseTop}`,
-          );
-
-          if (!leftWin || !rightWin) {
-            alert(
-              'El navegador ha bloqueado las ventanas emergentes.\n\n' +
-                'Permite popups para este sitio y vuelve a pulsar el botón.\n' +
-                'En Chrome/Edge suele aparecer un icono en la barra de direcciones.',
-            );
-            return;
-          }
-
-          try {
-            leftWin?.moveTo(baseLeft, baseTop);
-            leftWin?.resizeTo(flexwayW, h);
-          } catch {}
-          try {
-            rightWin?.moveTo(baseLeft + flexwayW, baseTop);
-            rightWin?.resizeTo(rossboardW, h);
-          } catch {}
-
-          try {
-            leftWin.location.href = left;
-          } catch {}
-          try {
-            rightWin.location.href = right;
-          } catch {}
-        }
-
-        document.addEventListener('click', (ev) => {
-          const target = ev.target;
-          if (!target) return;
-
-          const openBtn = target.closest ? target.closest('.split-tile-button') : null;
-          if (openBtn) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            openPopoutForWrap(qsWrap(openBtn));
-          }
-        });
-      })();
-    </script>
-  ) : null}
+  <a
+    href={href}
+    class="card"
+    {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+  >
+    <div class="card-icon">
+      {imageSrc ? (
+        <img src={imageSrc} alt={title} class={`card-image ${imageVariantClass}`} />
+      ) : iconName ? (
+        <Icon name={iconName} size={64} stroke-width={1.5} />
+      ) : null}
+    </div>
+    <p class="card-title">{title}</p>
+  </a>
 </div>
 
 <style>
   .card-wrap {
     position: relative;
-  }
-
-  .split-tile-button {
-    width: 100%;
-    text-align: center;
-  }
-
-  .card-icon--dual {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .dual-logos {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-  }
-
-  .dual-logo {
-    width: 44px;
-    height: 44px;
-    object-fit: contain;
-  }
-
-  .dual-logo-fallback {
-    width: 44px;
-    height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    border: 1px solid var(--card-border);
-    font-size: 1rem;
-    font-weight: 800;
-    background: #fff;
-  }
-
-  .dual-plus {
-    font-weight: 900;
-    opacity: 0.65;
-    font-size: 1.1rem;
   }
 
   .card-icon {

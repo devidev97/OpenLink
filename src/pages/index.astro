@@ -8,12 +8,6 @@ type Tool = {
 	imageSrc?: string;
 	iconName?: string;
 	imageVariant?: string;
-	/** Tarjeta extra: abrir Flexway + Rossboard en ventanas */
-	splitOnly?: boolean;
-	splitLeftHref?: string;
-	splitRightHref?: string;
-	splitLeftImageSrc?: string;
-	splitRightImageSrc?: string;
 };
 
 function parseExtraLinks(raw: string | undefined): Tool[] {
@@ -55,55 +49,11 @@ function parseExtraLinks(raw: string | undefined): Tool[] {
 }
 
 const tools = parseExtraLinks(import.meta.env.PUBLIC_EXTRA_LINKS);
-
-const flexwayHref =
-	tools.find((t) => /frsiberiagroup\.flexways\.net/i.test(t.href))?.href ??
-	tools.find((t) => /^flexway$/i.test(t.title))?.href ??
-	'https://frsiberiagroup.flexways.net/web/booking/#/login';
-
-const rossboardHref =
-	tools.find((t) => /board\.devidev\.work/i.test(t.href))?.href ??
-	tools.find((t) => /^rossboard$/i.test(t.title))?.href ??
-	'https://board.devidev.work/';
-
-const flexwayImageSrc =
-	tools.find((t) => t.href === flexwayHref || /^flexway$/i.test(t.title))?.imageSrc ??
-	'/frs-logo-png_seeklogo-394281-removebg-preview.png';
-
-const rossboardImageSrc =
-	tools.find((t) => t.href === rossboardHref || /^rossboard$/i.test(t.title))?.imageSrc ??
-	'/logo-RossBoard.png';
-
-function isRossboardTool(t: Tool): boolean {
-	return (
-		t.href === rossboardHref ||
-		/board\.devidev\.work/i.test(t.href) ||
-		/^rossboard$/i.test(t.title)
-	);
-}
-
-const splitPairCard: Tool = {
-	title: 'Flexway + Rossboard',
-	href: '#',
-	splitOnly: true,
-	splitLeftHref: flexwayHref,
-	splitRightHref: rossboardHref,
-	splitLeftImageSrc: flexwayImageSrc,
-	splitRightImageSrc: rossboardImageSrc,
-};
-
-const toolsForGrid: Tool[] = [];
-for (const t of tools) {
-	toolsForGrid.push(t);
-	if (isRossboardTool(t)) {
-		toolsForGrid.push(splitPairCard);
-	}
-}
 ---
 
 <Layout title="Dashboard Tools">
 	<div class="dashboard-grid">
-		{toolsForGrid.map((tool) => (
+		{tools.map((tool) => (
 			<Card {...tool} />
 		))}
 	</div>
