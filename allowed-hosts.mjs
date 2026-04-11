@@ -1,7 +1,11 @@
 /**
  * Hosts permitidos para Vite (dev + preview).
- * Opcional: define ALLOWED_HOSTS en el entorno, separado por comas.
- * Ejemplo: ALLOWED_HOSTS=links.devidev.work,dfds.devidev.app
+ * Rechaza peticiones cuyo Host no esté en la lista (mitiga DNS rebinding).
+ * Nunca uses `true` en vite.server.allowedHosts: permitiría cualquier host.
+ *
+ * Opcional: ALLOWED_HOSTS en el entorno, separado por comas.
+ * Un prefijo `.` permite ese dominio y todos sus subdominios (p. ej. `.devidev.es`).
+ * Ejemplo: ALLOWED_HOSTS=.devidev.es,links.devidev.work
  */
 function parseAllowedHosts() {
 	const raw = process.env.ALLOWED_HOSTS;
@@ -11,7 +15,7 @@ function parseAllowedHosts() {
 			.map((h) => h.trim())
 			.filter(Boolean);
 	}
-	return ['links.devidev.work', 'dfds.devidev.app'];
+	return ['.devidev.es'];
 }
 
 export const allowedHosts = parseAllowedHosts();
