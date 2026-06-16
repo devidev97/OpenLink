@@ -77,7 +77,7 @@ Las cabeceras anti-iframe están en `vercel.json`.
 
 ## Seguridad
 
-La app incluye cabeceras anti-iframe (`X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'`) configuradas en `next.config.ts`.
+La app incluye cabeceras anti-iframe (`X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'`) configuradas en `vercel.json`.
 
 ## Notas
 
