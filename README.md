@@ -70,8 +70,11 @@ npm run start
 ## Despliegue en Vercel
 
 1. Importa el repositorio en Vercel.
-2. Añade la variable `PUBLIC_EXTRA_LINKS` en **Settings → Environment Variables**.
-3. Despliega. Vercel detecta Next.js automáticamente.
+2. En **Settings → Build & Development Settings**:
+   - **Framework Preset:** Next.js
+   - **Output Directory:** déjalo vacío (no uses `dist`; eso era de Astro)
+3. Añade la variable `PUBLIC_EXTRA_LINKS` en **Settings → Environment Variables**.
+4. Redespliega.
 
 ## Seguridad
 
