@@ -70,11 +70,10 @@ npm run start
 ## Despliegue en Vercel
 
 1. Importa el repositorio en Vercel.
-2. En **Settings → Build & Development Settings**:
-   - **Framework Preset:** Next.js
-   - **Output Directory:** déjalo vacío (no uses `dist`; eso era de Astro)
-3. Añade la variable `PUBLIC_EXTRA_LINKS` en **Settings → Environment Variables**.
-4. Redespliega.
+2. Añade la variable `PUBLIC_EXTRA_LINKS` en **Settings → Environment Variables** (copia el JSON de `.env.example`).
+3. Despliega. El build genera export estático en `dist` (compatible con la config heredada de Astro).
+
+Las cabeceras anti-iframe están en `vercel.json`.
 
 ## Seguridad
 
