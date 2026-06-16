@@ -1,10 +1,13 @@
 # OpenLink
 
-Página simple (Astro) para listar enlaces y mostrarlos en tarjetas. Los enlaces extra se configuran vía `.env` usando una variable pública.
+Página simple (Next.js) para listar enlaces y mostrarlos en tarjetas. Los enlaces extra se configuran vía `.env` usando una variable de entorno.
+
+Desplegable en [Vercel](https://vercel.com) sin configuración adicional.
 
 ## Requisitos
 
-- Node.js + npm
+- Node.js >= 22.12.0
+- npm
 
 ## Instalación y arranque
 
@@ -13,13 +16,13 @@ npm install
 npm run dev
 ```
 
-Servidor local en `http://localhost:4321`.
+Servidor local en `http://localhost:3000`.
 
 ## Configuración del `.env`
 
-Este proyecto usa **una variable de entorno pública**:
+Este proyecto usa **una variable de entorno**:
 
-- **`PUBLIC_EXTRA_LINKS`**: lista de enlaces extra en formato **JSON**, pero guardado como **string**.
+- **`PUBLIC_EXTRA_LINKS`**: lista de enlaces extra en formato **JSON**, guardado como **string**.
 
 ### Crear tu `.env`
 
@@ -61,8 +64,18 @@ Campos por item:
 
 ```sh
 npm run build
-npm run preview
+npm run start
 ```
+
+## Despliegue en Vercel
+
+1. Importa el repositorio en Vercel.
+2. Añade la variable `PUBLIC_EXTRA_LINKS` en **Settings → Environment Variables**.
+3. Despliega. Vercel detecta Next.js automáticamente.
+
+## Seguridad
+
+La app incluye cabeceras anti-iframe (`X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'`) configuradas en `next.config.ts`.
 
 ## Notas
 
