@@ -1,84 +1,36 @@
-# OpenLink
+# Enlaces
 
-Página simple (Next.js) para listar enlaces y mostrarlos en tarjetas. Los enlaces extra se configuran vía `.env` usando una variable de entorno.
+Menú de accesos con el diseño de Rectificativos. Cada botón muestra su logo y su título. Si un enlace no tiene logo, usa el icono genérico.
 
-Desplegable en [Vercel](https://vercel.com) sin configuración adicional.
+## Arranque
 
-## Requisitos
-
-- Node.js >= 22.12.0
-- npm
-
-## Instalación y arranque
-
-```sh
+```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-Servidor local en `http://localhost:3000`.
+Servidor local en `http://localhost:5173`.
 
-## Configuración del `.env`
+## Variables de entorno
 
-Este proyecto usa **una variable de entorno**:
+Cada acceso usa el mismo número. `LINK` es la URL, `TITLE` el texto del botón e `IMAGE` el logo, que es opcional:
 
-- **`PUBLIC_EXTRA_LINKS`**: lista de enlaces extra en formato **JSON**, guardado como **string**.
-
-### Crear tu `.env`
-
-1. Copia el ejemplo:
-
-```sh
-cp .env.example .env
+```bash
+LINK1=https://chatgpt.com/
+TITLE1=ChatGPT
+IMAGE1=/logo-RossBoard.png
 ```
 
-2. Edita `.env` y ajusta `PUBLIC_EXTRA_LINKS`.
+Si no pones `IMAGE`, el botón usa el icono genérico `/logo-link.svg`. La ruta tiene que ser un archivo de `public/`, por ejemplo `/logo-Portools.png`.
 
-### Formato esperado (`PUBLIC_EXTRA_LINKS`)
+El número ordena el menú. Si falta un número, el resto sigue apareciendo. Solo se aceptan URLs `http` y `https`. Si la URL lleva `#`, ponla entre comillas para que el archivo `.env` no corte el enlace. Si un `LINK` no tiene `TITLE`, el botón muestra el dominio.
 
-- Debe ser un **array JSON**.
-- En `.env` debe ir como **string entre comillas**.
-- Puede ser **multilínea** siempre que esté entre comillas simples `'...'` o dobles `"..."`.
-
-Ejemplo (multilínea, recomendado para mantenerlo legible):
-
-```env
-PUBLIC_EXTRA_LINKS='[
-  {
-    "title": "Mi enlace",
-    "href": "https://example.com",
-    "imageSrc": "/logo-link.svg",
-    "imageVariant": "large"
-  }
-]'
-```
-
-Campos por item:
-
-- **`title`** (string, requerido): texto a mostrar.
-- **`href`** (string, requerido): URL destino.
-- **`imageSrc`** (string, opcional): ruta a una imagen dentro de `public/` (por ejemplo `"/mi-logo.png"`). Si no se pone, se usa `"/logo-link.svg"`.
-- **`imageVariant`** (string, opcional): variante de render (por ejemplo `"large"`), si tu UI la soporta.
+En Vercel, las mismas variables se añaden en **Settings → Environment Variables** y hace falta un nuevo despliegue para que entren en el menú.
 
 ## Build
 
-```sh
+```bash
 npm run build
-npm run start
+npm run preview
 ```
-
-## Despliegue en Vercel
-
-1. Importa el repositorio en Vercel.
-2. Añade la variable `PUBLIC_EXTRA_LINKS` en **Settings → Environment Variables** (copia el JSON de `.env.example`).
-3. Despliega. El build genera export estático en `dist` (compatible con la config heredada de Astro).
-
-Las cabeceras anti-iframe están en `vercel.json`.
-
-## Seguridad
-
-La app incluye cabeceras anti-iframe (`X-Frame-Options: DENY` y `Content-Security-Policy: frame-ancestors 'none'`) configuradas en `vercel.json`.
-
-## Notas
-
-- `.env` está **ignorado por git**; no se sube al repositorio. Usa `.env.example` para compartir la plantilla.
